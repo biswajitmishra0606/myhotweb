@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Base Coin Mint</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+  <script src="abi.js"></script>
+</head>
+<body>
+  <h1>🪙 Base Coin NFT Mint</h1>
+
+  <div class="preview-box">
+    <h3>Live Preview</h3>
+    <div class="nft-preview">
+      <!-- INLINE SVG START -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+        <defs>
+          <radialGradient id="outerGradient" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#1f7aff"/>
+            <stop offset="100%" stop-color="#0047ff"/>
+          </radialGradient>
+          <radialGradient id="innerGradient" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#bcd5ff"/>
+            <stop offset="100%" stop-color="#5d92ff"/>
+          </radialGradient>
+          <mask id="slashMask">
+            <rect width="200" height="200" fill="black"/>
+            <circle cx="100" cy="100" r="55" fill="white"/>
+            <rect x="50" y="95" width="100" height="10" fill="black"/>
+          </mask>
+        </defs>
+        <g transform="translate(100,100)">
+          <g id="coinBody">
+            <animateTransform attributeName="transform"
+              type="scale"
+              values="1,1;-1,1;1,1"
+              dur="6s"
+              repeatCount="indefinite" />
+            <g transform="translate(-100,-100)">
+              <g opacity="0.25">
+                <circle cx="101" cy="100" r="90" fill="#002f87"/>
+                <circle cx="102" cy="100" r="90" fill="#003399"/>
+                <circle cx="103" cy="100" r="90" fill="#003cb3"/>
+                <circle cx="104" cy="100" r="90" fill="#0040cc"/>
+                <circle cx="105" cy="100" r="90" fill="#0047ff"/>
+              </g>
+              <circle cx="100" cy="100" r="90" fill="url(#outerGradient)" />
+              <circle cx="100" cy="100" r="74" fill="url(#outerGradient)" opacity="0.7" />
+              <circle cx="100" cy="100" r="55" fill="url(#innerGradient)" />
+              <circle cx="100" cy="100" r="55" fill="url(#innerGradient)" mask="url(#slashMask)" />
+            </g>
+            <g transform="scale(-1,1)">
+              <text x="0" y="0"
+                text-anchor="middle" dominant-baseline="middle"
+                font-family="Arial" font-size="20" font-weight="bold"
+                fill="#0047ff">
+                BASE
+              </text>
+            </g>
+          </g>
+        </g>
+      </svg>
+      <!-- INLINE SVG END -->
+    </div>
+  </div>
+
+  <button id="connectBtn">Connect Wallet</button>
+  <button id="mintBtn" disabled>Mint Now</button>
+
+  <p id="walletDisplay"></p>
+  <p class="status" id="status">
+    <span id="spinner" style="display:none;" class="spinner"></span>
+  </p>
+  <p id="mintedCount"></p>
+
+  <script>
+    const CONTRACT_ADDRESS = "0x7D8a25f635C9cBBC698508921Db40Fd61d1954Ac";
+    let signer, contract;
+
+    document.getElementById("connectBtn").onclick = async () => {
+      if (!window.ethereum) return alert("Please install MetaMask!");
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      signer = await provider.getSigner();
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+
+      contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const shortWallet = accounts[0].slice(0, 6) + "..." + accounts[0].slice(-4);
+      document.getElementById("walletDisplay").textContent = "👛 " + shortWallet;
+      document.getElementById("status").textContent = "✅ Wallet connected";
+      document.getElementById("mintBtn").disabled = false;
+    };
+
+    document.getElementById("mintBtn").onclick = async () => {
+      try {
+        document.getElementById("spinner").style.display = "inline-block";
+        document.getElementById("status").textContent = " Minting...";
+
+        const tx = await contract.freeMint();
+        await tx.wait();
+
+        const count = await contract.totalMinted();
+        document.getElementById("status").textContent = "✅ Mint successful!";
+        document.getElementById("mintedCount").textContent = `${count.toString()} / 100 minted`;
+      } catch (err) {
+        document.getElementById("status").textContent = "❌ Mint failed";
+        console.error(err);
+      } finally {
+        document.getElementById("spinner").style.display = "none";
+      }
+    };
+  </script>
+</body>
+</html>
