@@ -14,7 +14,7 @@
   <div class="preview-box">
     <h3>Live Preview</h3>
     <div class="nft-preview">
-      <!-- INLINE SVG START -->
+      <!-- Inline animated SVG -->
       <svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
         <defs>
           <radialGradient id="outerGradient" cx="50%" cy="50%" r="50%">
@@ -62,7 +62,6 @@
           </g>
         </g>
       </svg>
-      <!-- INLINE SVG END -->
     </div>
   </div>
 
@@ -70,9 +69,12 @@
   <button id="mintBtn" disabled>Mint Now</button>
 
   <p id="walletDisplay"></p>
+
+  <!-- ✅ FIXED: Spinner properly defined -->
   <p class="status" id="status">
-    <span id="spinner" style="display:none;" class="spinner"></span>
+    <span id="spinner" class="spinner" style="display:none;"></span>
   </p>
+
   <p id="mintedCount"></p>
 
   <script>
@@ -94,9 +96,10 @@
 
     document.getElementById("mintBtn").onclick = async () => {
       try {
-        document.getElementById("spinner").style.display = "inline-block";
-        document.getElementById("status").textContent = " Minting...";
+        const spinner = document.getElementById("spinner");
+        if (spinner) spinner.style.display = "inline-block";
 
+        document.getElementById("status").textContent = " Minting...";
         const tx = await contract.freeMint();
         await tx.wait();
 
@@ -107,7 +110,8 @@
         document.getElementById("status").textContent = "❌ Mint failed";
         console.error(err);
       } finally {
-        document.getElementById("spinner").style.display = "none";
+        const spinner = document.getElementById("spinner");
+        if (spinner) spinner.style.display = "none";
       }
     };
   </script>
